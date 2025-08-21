@@ -25,7 +25,86 @@
 import { createCard } from './createCard';
 import Phaser from 'phaser';
 
+
+const juego = {
+    jugadores: [
+        { nombre: "Detin", id: 0, cartas: [], cartaCasita: null },
+        { nombre: "Maro", id: 1, cartas: [], cartaCasita: null },
+        { nombre: "Dedo", id: 2, cartas: [], cartaCasita: null },
+        { nombre: "Pingüe", id: 3, cartas: [], cartaCasita: null },
+    ],
+    cartas: [{ sprite: "", palo: "", numero: 0, lugar: { id: -1, lugar: "mazo" } }],
+    estado: "no iniciado",
+    id: 0,
+}
+
+/**
+ *
+ * Empieza con Oro (1-2-3-4-5-6-7-10-11-12) / 10  (0-9)-> mazo distinto
+ * Copa: 11-20 (10-19)
+ * Espada: 21-30
+ * Basto: 31-40
+ */
+
+function generarCartas() {
+    const palos = ["oro", "copa", "espada", "basto"];
+    const numeros = [1, 2, 3, 4, 5, 6, 7, 10, 11, 12];
+    const cartas = Array.from({ length: 40 }, (_, i) => {
+        const id = i + 1;
+        const sprite = `card_${id}`;
+        const calcPalo = (id % 10 != 0) ? Math.floor(id / 10) : Math.floor(id / 10) - 1;
+        const palo = palos[calcPalo];
+        const numero = numeros[i % 10];
+        const lugar = { id: -1, lugar: "mazo" };
+        return { id, sprite, palo, numero, lugar };
+    });
+    return cartas;
+}
+
+function generateNewGame() {
+
+    const juego = {
+        jugadores: [
+            { nombre: "Detin", id: 0, cartas: [], cartaCasita: null },
+            { nombre: "Maro", id: 1, cartas: [], cartaCasita: null },
+            { nombre: "Dedo", id: 2, cartas: [], cartaCasita: null },
+            { nombre: "Pingüe", id: 3, cartas: [], cartaCasita: null },
+        ],
+        cartas: generarCartas(),
+        estado: "no iniciado",
+        id: 0,
+    }
+
+    return juego
+}
+
+function repartirCartasInicio(juego) {
+    // Hay que repartir 3 cartas para cada jugador para su mano
+    // Y poner 4 cartas en la mesa
+    const cartasPorJugador = 3;
+    const cartasEnMesa = 4;
+    const deck = Phaser.Utils.Array.Shuffle([...juego.cartas]);
+    for (const player of juego.jugadores) {
+        console.log(player);
+        // Remove cartasPorJugador from deck
+        const cartas = deck.splice(0, cartasPorJugador);
+        cartas.forEach((carta) => {
+            carta.lugar = { id: player.id, lugar: "mano" };
+        });
+    }
+    const cartasMesa = deck.splice(0, cartasEnMesa);
+    cartasMesa.forEach((carta) => {
+        carta.lugar = { id: -1, lugar: "mesa" };
+    });
+
+
+    console.log(deck);
+    console.log(juego);
+}
+
 export class Play extends Phaser.Scene {
+
+    newGame = null;
     // All cards names
     cardNames = Array.from({ length: 40 }, (_, i) => `card_${i + 1}`);
     // Cards Game Objects
@@ -59,19 +138,22 @@ export class Play extends Phaser.Scene {
 
 
     init(data) {
+
+        this.newGame = generateNewGame();
         this.roomId = data && data.roomId ? data.roomId : null;
         // Fadein camera
         this.cameras.main.fadeIn(500);
         this.lives = 10;
         this.volumeButton();
+        repartirCartasInicio(this.newGame);
     }
 
     create() {
         const backgroudScale = 1.25;
         // Background image
         this.add.image(20, this.gridConfiguration.y - 50, "background")
-         .setScale(backgroudScale,backgroudScale)
-         .setOrigin(0);
+            .setScale(backgroudScale, backgroudScale)
+            .setOrigin(0);
 
         const titleText = this.add.text(this.sys.game.scale.width / 2, this.sys.game.scale.height / 2,
             "Casita Robada\nClick para Jugar",
@@ -143,15 +225,22 @@ export class Play extends Phaser.Scene {
 
     createGridCards() {
         // Phaser random array position
-        const gridCardNames = Phaser.Utils.Array.Shuffle([...this.cardNames]);
+        // const gridCardNames = Phaser.Utils.Array.Shuffle([...this.cardNames]);
+        console.log("Cartas jugador 0",
+            this.newGame.cartas.filter((cartas) => cartas.lugar.lugar == "mano" && cartas.lugar.id === 0));
 
-        return gridCardNames.map((name, index) => {
+        const gridCardNames = [...this.newGame.cartas.filter((cartas) => cartas.lugar.lugar === "mesa"),
+        ...this.newGame.cartas.filter((cartas) => cartas.lugar.lugar == "mano" && cartas.lugar.id === 0)
+        ];
+
+
+        return gridCardNames.map((carta, index) => {
             const newCard = createCard({
                 scene: this,
                 x: this.gridConfiguration.x + (98 + this.gridConfiguration.paddingX) * (index % 4),
                 y: -1000,
-                frontTexture: name,
-                cardName: name
+                frontTexture: carta.sprite,
+                cardName: carta.id
             });
             this.add.tween({
                 targets: newCard.gameObject,

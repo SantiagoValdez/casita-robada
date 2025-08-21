@@ -23,10 +23,10 @@ export class Preloader extends Phaser.Scene {
         this.load.image("background");
         this.load.image("card-back", "cards/spanish_deck/back.png");
 
-        for(let i=1; i<=40; i++) {
+        for (let i = 1; i <= 40; i++) {
             this.load.image(`card_${i}`, `cards/spanish_deck/${i}.png`);
         }
-       
+
 
         this.load.image("heart", "ui/heart.png");
 
