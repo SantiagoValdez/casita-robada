@@ -1,12 +1,13 @@
 import { Preloader } from './Preloader';
 import { Play } from './Play';
+import { Menu } from './Menu';
 import Phaser from 'phaser';
 
 const config = {
-    title: 'Card Memory Game',
+    title: 'Casita Robada!',
     type: Phaser.AUTO,
-    width: 549,
-    height: 480,
+    width: 600,
+    height: 600,
     parent: 'game-container',
     backgroundColor: '#192a56',
     pixelArt: true,
@@ -16,6 +17,7 @@ const config = {
     },
     scene: [
         Preloader,
+        Menu,
         Play
     ]
 };

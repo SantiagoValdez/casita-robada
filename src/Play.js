@@ -1,63 +1,33 @@
+/**
+* Casita Robada
+* Reglas del juego:
+*   Objetivo del juego:
+*   - El objetivo principal es acumular la mayor cantidad de cartas posible en tu "casita".
+*   
+*   Preparación:
+*   - Se utiliza una baraja de naipes españoles. 
+*   - Se reparten tres cartas a cada jugador.
+*   - Se colocan cuatro cartas boca arriba en el centro de la mesa.
+*   
+*   Desarrollo del juego (por turnos):
+*   -  Cada jugador, en su turno, revisa las cartas que tiene en la mano y las compara con las de la mesa.
+*   -  Si una de tus cartas coincide en número con una carta en la mesa, puedes tomarla y colocar ambas boca arriba a un lado, formando tu "casita".
+*   -  Si tu carta coincide con la carta superior de la "casita" de otro jugador, puedes "robarle" toda su casita y sumarla a la tuya. La casita robada se apila con la tuya, siempre con la carta superior visible.
+*   -  Si no puedes tomar ni robar ninguna carta, debes descartar una de tus cartas y colocarla boca arriba en el centro de la mesa.
+*   -  Cuando un jugador se queda sin cartas en la mano, el repartidor le da tres cartas nuevas. El juego continúa hasta que se termina todo el mazo.
+*
+*   Final del juego:
+*   - Cuando no quedan cartas para repartir, el juego termina.
+*   - El último jugador que ha "levantado" cartas se lleva las que queden en el centro de la mesa.
+*   - Para determinar al ganador, cada jugador cuenta el total de cartas en su casita.
+*   - El jugador con más cartas en su casita gana la partida.
+**/
 import { createCard } from './createCard';
 import Phaser from 'phaser';
 
-/**
- * Card Memory Game by Francisco Pereira (Gammafp)
- * -----------------------------------------------
- *
- * Test your memory skills in this classic game of matching pairs.
- * Flip over cards to reveal pictures, and try to remember where each image is located.
- * Match all the pairs to win!
- *
- * Music credits:
- * "Fat Caps" by Audionautix is licensed under the Creative Commons Attribution 4.0 license. https://creativecommons.org/licenses/by/4.0/
- * Artist http://audionautix.com/
- */
 export class Play extends Phaser.Scene {
     // All cards names
-    // cardNames = ["card-0", "card-1", "card-2", "card-3", "card-4", "card-5"];
-    cardNames = [
-        "card_1",
-        "card_2",
-        "card_3",
-        "card_4",
-        "card_5",
-        "card_6",
-        "card_7",
-        "card_8",
-        "card_9",
-        "card_10",
-        "card_11",
-        "card_12",
-        "card_13",
-        "card_14",
-        "card_15",
-        "card_16",
-        "card_17",
-        "card_18",
-        "card_19",
-        "card_20",
-        "card_21",
-        "card_22",
-        "card_23",
-        "card_24",
-        "card_25",
-        "card_26",
-        "card_27",
-        "card_28",
-        "card_29",
-        "card_30",
-        "card_31",
-        "card_32",
-        "card_33",
-        "card_34",
-        "card_35",
-        "card_36",
-        "card_37",
-        "card_38",
-        "card_39",
-        "card_40"
-    ];
+    cardNames = Array.from({ length: 40 }, (_, i) => `card_${i + 1}`);
     // Cards Game Objects
     cards = [];
 
@@ -78,6 +48,8 @@ export class Play extends Phaser.Scene {
         paddingY: 10
     }
 
+    playerCards = [];
+
 
     constructor() {
         super({
@@ -85,7 +57,9 @@ export class Play extends Phaser.Scene {
         });
     }
 
-    init() {
+
+    init(data) {
+        this.roomId = data && data.roomId ? data.roomId : null;
         // Fadein camera
         this.cameras.main.fadeIn(500);
         this.lives = 10;
@@ -93,11 +67,14 @@ export class Play extends Phaser.Scene {
     }
 
     create() {
+        const backgroudScale = 1.25;
         // Background image
-        this.add.image(this.gridConfiguration.x - 63, this.gridConfiguration.y - 77, "background").setOrigin(0);
+        this.add.image(20, this.gridConfiguration.y - 50, "background")
+         .setScale(backgroudScale,backgroudScale)
+         .setOrigin(0);
 
         const titleText = this.add.text(this.sys.game.scale.width / 2, this.sys.game.scale.height / 2,
-            "Memory Card Game\nClick to Play",
+            "Casita Robada\nClick para Jugar",
             { align: "center", strokeThickness: 4, fontSize: 40, fontStyle: "bold", color: "#8c7ae6" }
         )
             .setOrigin(.5)
@@ -166,7 +143,7 @@ export class Play extends Phaser.Scene {
 
     createGridCards() {
         // Phaser random array position
-        const gridCardNames = Phaser.Utils.Array.Shuffle([...this.cardNames, ...this.cardNames]);
+        const gridCardNames = Phaser.Utils.Array.Shuffle([...this.cardNames]);
 
         return gridCardNames.map((name, index) => {
             const newCard = createCard({
@@ -230,6 +207,7 @@ export class Play extends Phaser.Scene {
                 volumeIcon.setAlpha(.5)
             }
         });
+        this.sound.setVolume(0);
     }
 
     startGame() {
